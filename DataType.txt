@@ -1,0 +1,355 @@
+Perfect 👍
+Ab main tumhare **String** wale notes ko fully correct, clean, structured aur interview-ready format me bana raha hoon. Sab mistakes fix kar raha hoon.
+
+---
+
+# ☕ String in Java – Complete & Perfect Notes
+
+---
+
+# 🔹 1️⃣ String Kya Hai?
+
+👉 String = sequence of characters
+👉 String ek **class** hai (primitive nahi)
+👉 Immutable hoti hai (change nahi hoti)
+
+Example:
+
+```java
+String name = "Vipul";
+```
+
+---
+
+# 🔹 2️⃣ Primitive vs Object Memory
+
+### Primitive Example
+
+```java
+int a = 1;
+```
+
+✔ Value directly memory me store hoti hai.
+
+---
+
+### Object Example
+
+```java
+Student student = new Student();
+```
+
+✔ `new Student()` → Heap me object banata hai
+✔ `student` → Reference variable hai
+✔ Ye object ka address store karta hai
+
+---
+
+# 🔹 3️⃣ String Object Creation
+
+### Way 1 (String Pool – Recommended)
+
+```java
+String name = "Ram";
+```
+
+✔ String Pool me store hota hai
+✔ Same value dobara aaye to new object nahi banta
+
+---
+
+### Way 2 (Heap – Using new)
+
+```java
+String a = new String("Ram");
+String b = new String("Ram");
+```
+
+✔ Heap me 2 alag objects banenge
+
+---
+
+## Comparison
+
+```java
+System.out.println(a == b);
+```
+
+Output:
+
+```
+false
+```
+
+✔ `==` memory address compare karta hai
+✔ Dono alag memory me hain
+
+---
+
+### String Pool Example
+
+```java
+String c = "Ram";
+String d = "Ram";
+
+System.out.println(c == d);
+```
+
+Output:
+
+```
+true
+```
+
+✔ Dono same pool reference use karte hain
+
+---
+
+# 🔹 4️⃣ == vs equals()
+
+```java
+String x = new String("Ram");
+String y = new String("Ram");
+
+System.out.println(x == y);        // false
+System.out.println(x.equals(y));   // true
+```
+
+✔ `==` → address compare
+✔ `equals()` → value compare
+
+---
+
+# 🔹 5️⃣ String Methods
+
+---
+
+## length()
+
+```java
+String name = "Ram";
+int length = name.length();
+System.out.println(length);
+```
+
+---
+
+## charAt()
+
+```java
+char c = name.charAt(2);
+```
+
+Last character:
+
+```java
+char last = name.charAt(name.length() - 1);
+```
+
+---
+
+## equalsIgnoreCase()
+
+```java
+System.out.println("Ram".equalsIgnoreCase("ram"));
+```
+
+✔ Case ignore karta hai
+
+---
+
+# 🔹 6️⃣ compareTo()
+
+```java
+String str1 = "remote";
+String str2 = "car";
+
+int i = str1.compareTo(str2);
+System.out.println(i);
+```
+
+✔ Lexicographically compare karta hai
+✔ ASCII value ke base par
+
+Example:
+
+```java
+System.out.println('r' + 0);  // 114
+System.out.println('c' + 0);  // 99
+```
+
+---
+
+# 🔹 7️⃣ substring()
+
+```java
+String name = "Amar Kumar";
+
+String sub = name.substring(5, 10);
+System.out.println(sub);
+```
+
+✔ Start inclusive
+✔ End exclusive
+
+---
+
+# 🔹 8️⃣ toLowerCase() & toUpperCase()
+
+```java
+String name = "Gojo";
+
+System.out.println(name.toLowerCase());
+System.out.println(name.toUpperCase());
+```
+
+---
+
+# 🔹 9️⃣ trim()
+
+```java
+String name = "  hello  ";
+System.out.println(name.trim());
+```
+
+✔ Extra spaces remove karta hai
+
+---
+
+# 🔹 🔟 replace()
+
+```java
+String name = "hello meow";
+
+String newName = name.replace("meow", "kumar").toUpperCase();
+System.out.println(newName);
+```
+
+---
+
+# 🔹 1️⃣1️⃣ contains()
+
+```java
+String name = "Vipul";
+
+System.out.println(name.contains("p"));  // true
+```
+
+---
+
+# 🔹 1️⃣2️⃣ startsWith() & endsWith()
+
+```java
+String name = "gojo";
+
+System.out.println(name.startsWith("go"));
+System.out.println(name.endsWith("jo"));
+```
+
+---
+
+# 🔹 1️⃣3️⃣ isEmpty() vs isBlank()
+
+```java
+String str1 = "";
+String str2 = " ";
+
+System.out.println(str1.isEmpty());  // true
+System.out.println(str2.isEmpty());  // false
+
+System.out.println(str2.isBlank());  // true
+```
+
+✔ `isEmpty()` → length = 0
+✔ `isBlank()` → only spaces allowed
+
+---
+
+# 🔹 1️⃣4️⃣ valueOf()
+
+```java
+int a = 10;
+
+String s = String.valueOf(a);
+System.out.println(s);
+```
+
+---
+
+# 🔹 1️⃣5️⃣ format()
+
+```java
+String formatted = String.format("My name is %s and I am %d years old", "Me", 25);
+System.out.println(formatted);
+```
+
+---
+
+# 🔹 1️⃣6️⃣ subSequence()
+
+```java
+String name = "gojo";
+
+System.out.println(name.substring(2, 4));
+System.out.println(name.subSequence(2, 4));
+```
+
+✔ Dono similar kaam karte hain
+✔ `subSequence()` return type = CharSequence
+
+---
+
+# 🔥 Important Concept – String is Immutable
+
+```java
+String name = "Ram";
+name.concat(" Kumar");
+```
+
+✔ Original string change nahi hoti
+✔ Naya object banta hai
+
+---
+
+# 🔥 String Pool Summary
+
+```
+String name = "Ram";      → String Pool
+new String("Ram");        → Heap
+```
+
+✔ `==` → reference compare
+✔ `equals()` → value compare
+
+---
+
+# 🔥 Final Short Summary
+
+```
+String = class
+Immutable
+Stored in String Pool
+== compare address
+equals() compare value
+```
+
+---
+
+Ab ye version:
+
+✔ Fully corrected
+✔ All syntax fixed
+✔ Memory concept clear
+✔ Interview ready
+✔ Beginner friendly
+
+---
+
+Next logical topic:
+
+👉 StringBuilder & StringBuffer
+👉 Wrapper Classes
+👉 Arrays
+👉 OOP Deep
+
+Tumhara foundation strong ho raha hai 💪
