@@ -1,0 +1,137 @@
+# LeetCode 125 — Valid Palindrome
+
+Question: दिए गए String में केवल letters और digits को consider करके check करना है कि वह आगे और पीछे से एक जैसा पढ़ा जाता है या नहीं। Uppercase और lowercase को समान मानेंगे।
+
+Example:
+
+```
+s = "A man, a plan, a canal: Panama"
+Output = true
+```
+
+क्योंकि punctuation और spaces हटाने पर `amanaplanacanalpanama` मिलता है, जो palindrome है।
+
+## 1. Brute Force Approach
+
+Idea: पहले सभी non-alphanumeric characters हटाकर String को lowercase में बदलेंगे। फिर उसका reverse बनाकर original से compare करेंगे।
+
+Time: O(n) · Space: O(n)
+
+```
+
+class Main {
+    public static boolean isPalindrome(String s) {
+
+        // केवल letters और digits रखकर lowercase बनाएँगे
+        String clean = s.replaceAll("[^a-zA-Z0-9]", "")
+                         .toLowerCase();
+
+        // String को reverse करने के लिए StringBuilder
+        String reverse = new StringBuilder(clean)
+                         .reverse().toString();
+
+        // Original और reverse समान हैं या नहीं
+        return clean.equals(reverse);
+    }
+}
+
+```
+
+## 2. Better Approach — Filtered String + Two Pointers
+
+Idea: पहले String से unwanted characters हटाएँगे। फिर `left` और `right` pointers से दोनों तरफ के characters compare करेंगे।
+
+Example: `race a car` → `raceacar`
+
+- `r == r` ✓
+- `a == a` ✓
+- `c != a` ✗ → `false`
+
+Time: O(n) · Space: O(n)
+
+```
+
+class Main {
+    public static boolean isPalindrome(String s) {
+
+        // केवल letters और digits रखेंगे
+        String clean = s.replaceAll("[^a-zA-Z0-9]", "")
+                         .toLowerCase();
+
+        int left = 0;
+        int right = clean.length() - 1;
+
+        // दोनों तरफ से characters compare करेंगे
+        while (left < right) {
+
+            // Characters अलग हैं, तो palindrome नहीं है
+            if (clean.charAt(left) != clean.charAt(right)) {
+                return false;
+            }
+
+            // दोनों pointers आगे बढ़ाएँगे
+            left++;
+            right--;
+        }
+
+        // सभी characters match हुए
+        return true;
+    }
+}
+
+```
+
+## 3. Optimal Approach — Two Pointers (Without Extra String)
+
+Idea: Original String पर ही दोनों pointers चलाएँगे। Non-alphanumeric characters skip करेंगे और बाकी characters को lowercase करके compare करेंगे।
+
+Time: O(n) · Extra Space: O(1)
+
+```
+
+class Main {
+    public static boolean isPalindrome(String s) {
+
+        int left = 0;
+        int right = s.length() - 1;
+
+        while (left < right) {
+
+            // Left से non-alphanumeric characters skip करेंगे
+            while (left < right &&
+                   !Character.isLetterOrDigit(s.charAt(left))) {
+                left++;
+            }
+
+            // Right से non-alphanumeric characters skip करेंगे
+            while (left < right &&
+                   !Character.isLetterOrDigit(s.charAt(right))) {
+                right--;
+            }
+
+            // दोनों characters को lowercase में compare करेंगे
+            if (Character.toLowerCase(s.charAt(left)) !=
+                Character.toLowerCase(s.charAt(right))) {
+                return false;
+            }
+
+            // Match होने पर दोनों pointers आगे बढ़ाएँगे
+            left++;
+            right--;
+        }
+
+        return true;
+    }
+}
+
+```
+
+## Final Revision
+
+| Approach                   | Time | Extra Space |
+| -------------------------- | ---- | ----------- |
+| Brute Force — Reverse      | O(n) | O(n)        |
+| Better — Filter + Pointers | O(n) | O(n)        |
+| Optimal — Direct Pointers  | O(n) | O(1)        |
+
+याद रखने की लाइन: Palindrome में दोनों तरफ के characters compare करो; LeetCode 125 में unwanted characters skip करो और case ignore करो।
