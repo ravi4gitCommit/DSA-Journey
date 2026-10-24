@@ -1,0 +1,106 @@
+# LeetCode 977 — Squares of a Sorted Array
+
+Question: एक sorted integer array दिया है, जिसमें negative numbers भी हो सकते हैं। हर number का square निकालकर नया array ascending order में return करना है।
+
+Example:
+
+```
+nums = [-4, -1, 0, 3, 10]
+Output = [0, 1, 9, 16, 100]
+```
+
+## 1. Brute Force — Square + Sort
+
+Idea: हर element का square निकालेंगे। फिर नए array को sort कर देंगे।
+
+Example: `[-4, -1, 0, 3, 10]` → squares `[16, 1, 0, 9, 100]` → sort करने पर `[0, 1, 9, 16, 100]`।
+
+Time: O(n log n) · Extra Space: O(n)
+
+```
+
+import java.util.Arrays;
+
+class Solution {
+    public int[] sortedSquares(int[] nums) {
+        int n = nums.length;
+        int[] result = new int[n];
+
+        // हर number का square निकालेंगे
+        for (int i = 0; i < n; i++) {
+            result[i] = nums[i] * nums[i];
+        }
+
+        // Squares को ascending order में sort करेंगे
+        Arrays.sort(result);
+
+        return result;
+    }
+}
+
+```
+
+## 2. Better — Two Pointers + Sort से बचना नहीं, बल्कि सही क्रम में भरना
+
+इस problem में standard efficient solution सीधे Two Pointers है। इसलिए एक अलग, popular intermediate approach है: square करने के बाद Counting Sort, लेकिन वह values की range पर निर्भर करता है और सामान्य LeetCode solution के लिए बेहतर विकल्प नहीं है।
+
+इसलिए यहाँ एक सही और उपयोगी alternative के रूप में Square + Sort को ही रखो; इसे brute force कहा जाता है। अलग Better approach बनाकर गलत या अनावश्यक तरीका नहीं देंगे।
+
+## 3. Optimal — Two Pointers
+
+Idea: सबसे बड़ा square सबसे बाएँ या सबसे दाएँ element से आएगा। इसलिए दोनों ends compare करके बड़ा square result array में पीछे से भरेंगे।
+
+Example: `[-4, -1, 0, 3, 10]`
+
+- `-4² = 16`, `10² = 100` → पीछे `100` रखेंगे।
+- फिर `-4² = 16`, `3² = 9` → पीछे `16` रखेंगे।
+- इसी तरह भरने पर `[0, 1, 9, 16, 100]` मिलेगा।
+
+Time: O(n) · Extra Space: O(n) result array के लिए
+
+```
+
+class Solution {
+    public int[] sortedSquares(int[] nums) {
+        int n = nums.length;
+        int[] result = new int[n];
+
+        // दोनों ends पर pointers रखेंगे
+        int left = 0;
+        int right = n - 1;
+
+        // सबसे बड़ा square पीछे से भरेंगे
+        int index = n - 1;
+
+        while (left <= right) {
+
+            int leftSquare = nums[left] * nums[left];
+            int rightSquare = nums[right] * nums[right];
+
+            // दोनों में बड़ा square चुनेंगे
+            if (leftSquare > rightSquare) {
+                result[index] = leftSquare;
+                left++;
+            } else {
+                result[index] = rightSquare;
+                right--;
+            }
+
+            // अगली position पर जाएँगे
+            index--;
+        }
+
+        return result;
+    }
+}
+
+```
+
+## Final Revision
+
+| Approach             | Time       | Extra Space       |
+| -------------------- | ---------- | ----------------- |
+| Square + Sort        | O(n log n) | O(n)              |
+| Optimal Two Pointers | O(n)       | O(n) result array |
+
+याद रखने की लाइन: Sorted array के squares में सबसे बड़ा value दोनों ends में होगा। बड़े square को result array में पीछे से भरो।
