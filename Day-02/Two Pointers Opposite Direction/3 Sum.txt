@@ -1,0 +1,200 @@
+# LeetCode 15 — 3Sum
+
+Question: एक integer array दिया है। ऐसे तीन numbers खोजने हैं जिनका sum `0` हो। सभी unique triplets return करने हैं; duplicate triplets नहीं होने चाहिए।
+
+Example:
+
+```
+nums = [-1, 0, 1, 2, -1, -4]
+
+Output = [[-1, -1, 2], [-1, 0, 1]]
+```
+
+## 1. Brute Force — Three Nested Loops
+
+Idea: तीन loops लगाकर हर possible triplet का sum check करेंगे। Duplicate triplets से बचने के लिए result में डालने से पहले sort करके uniqueness check करेंगे।
+
+Example: `-1 + 0 + 1 = 0` → valid triplet।
+
+Time: O(n³) worst case · Space: O(k) result के अलावा, जहाँ k unique triplets की संख्या है।
+
+```
+
+import java.util.*;
+
+class Solution {
+    public List<List<Integer>> threeSum(int[] nums) {
+        Set<List<Integer>> result = new HashSet<>();
+        int n = nums.length;
+
+        // पहला number चुनेंगे
+        for (int i = 0; i < n - 2; i++) {
+
+            // दूसरा number चुनेंगे
+            for (int j = i + 1; j < n - 1; j++) {
+
+                // तीसरा number चुनेंगे
+                for (int k = j + 1; k < n; k++) {
+
+                    // तीनों numbers का sum check करेंगे
+                    if (nums[i] + nums[j] + nums[k] == 0) {
+
+                        // Duplicate हटाने के लिए triplet sort करेंगे
+                        List<Integer> triplet = Arrays.asList(
+                            nums[i], nums[j], nums[k]
+                        );
+                        Collections.sort(triplet);
+
+                        // Set केवल unique triplets रखेगा
+                        result.add(triplet);
+                    }
+                }
+            }
+        }
+
+        return new ArrayList<>(result);
+    }
+}
+
+```
+
+## 2. Better — HashSet Approach
+
+Idea: पहला number fix करेंगे। बाकी array में दो numbers खोजेंगे जिनका sum `-nums[i]` हो। HashSet की मदद से पहले देखे गए numbers को जल्दी खोज सकते हैं।
+
+Example: पहला number `-1` है, तो बाकी दो numbers का sum `1` होना चाहिए। `0 + 1 = 1` मिलने पर `[-1, 0, 1]` valid triplet है।
+
+Time: O(n²) average · Auxiliary Space: O(n), result के अलावा।
+
+```
+
+import java.util.*;
+
+class Solution {
+    public List<List<Integer>> threeSum(int[] nums) {
+        Set<List<Integer>> result = new HashSet<>();
+        int n = nums.length;
+
+        // पहला number fix करेंगे
+        for (int i = 0; i < n - 2; i++) {
+            Set<Integer> seen = new HashSet<>();
+
+            // बाकी numbers में pair खोजेंगे
+            for (int j = i + 1; j < n; j++) {
+
+                // तीसरा number क्या होना चाहिए?
+                int required = -nums[i] - nums[j];
+
+                // Required number पहले देखा है?
+                if (seen.contains(required)) {
+
+                    // Triplet को sort करके duplicate हटाएँगे
+                    List<Integer> triplet = Arrays.asList(
+                        nums[i], nums[j], required
+                    );
+                    Collections.sort(triplet);
+                    result.add(triplet);
+                }
+
+                // Current number को याद रखेंगे
+                seen.add(nums[j]);
+            }
+        }
+
+        return new ArrayList<>(result);
+    }
+}
+
+```
+
+## 3. Optimal — Sorting + Two Pointers
+
+Idea: Array sort करेंगे। एक number fix करके बाकी दो numbers के लिए `left` और `right` pointers चलाएँगे।
+
+- Sum `0` है → triplet save करो और duplicates skip करो।
+- Sum छोटा है → `left++`।
+- Sum बड़ा है → `right--`।
+
+Example: Sorted array `[-4, -1, -1, 0, 1, 2]`
+
+- `-1` fix करो।
+- `left = -1`, `right = 2` → sum `0` → `[-1, -1, 2]`।
+- अगला pair `-1 + 0 + 1 = 0` → `[-1, 0, 1]`।
+
+Time: O(n²) · Auxiliary Space: O(1) extra, sorting implementation के अनुसार; result space अलग है।
+
+```
+
+import java.util.*;
+
+class Solution {
+    public List<List<Integer>> threeSum(int[] nums) {
+        List<List<Integer>> result = new ArrayList<>();
+
+        // Sorting से two pointers और duplicate skipping आसान होगा
+        Arrays.sort(nums);
+        int n = nums.length;
+
+        for (int i = 0; i < n - 2; i++) {
+
+            // एक जैसे पहले numbers दोबारा process नहीं करेंगे
+            if (i > 0 && nums[i] == nums[i - 1]) {
+                continue;
+            }
+
+            int left = i + 1;
+            int right = n - 1;
+
+            while (left < right) {
+
+                // तीनों numbers का sum
+                int sum = nums[i] + nums[left] + nums[right];
+
+                if (sum == 0) {
+                    // Valid unique triplet मिल गया
+                    result.add(Arrays.asList(
+                        nums[i], nums[left], nums[right]
+                    ));
+
+                    left++;
+                    right--;
+
+                    // Left के duplicate numbers skip करेंगे
+                    while (left < right &&
+                           nums[left] == nums[left - 1]) {
+                        left++;
+                    }
+
+                    // Right के duplicate numbers skip करेंगे
+                    while (left < right &&
+                           nums[right] == nums[right + 1]) {
+                        right--;
+                    }
+
+                } else if (sum < 0) {
+                    // Sum छोटा है, बड़ा number चाहिए
+                    left++;
+                } else {
+                    // Sum बड़ा है, छोटा number चाहिए
+                    right--;
+                }
+            }
+        }
+
+        return result;
+    }
+}
+
+```
+
+## Final Revision
+
+| Approach               | Time          | Extra Space\*                     |
+| ---------------------- | ------------- | --------------------------------- |
+| Brute Force            | O(n³)         | O(k) result के अलावा              |
+| HashSet                | O(n²) average | O(n)                              |
+| Sorting + Two Pointers | O(n²)         | O(1) auxiliary, sorting को छोड़कर |
+
+\*Result में रखे गए triplets की memory अलग है।
+
+याद रखने की लाइन: 3Sum में एक number fix करो, बाकी दो को Two Pointers से खोजो और duplicate triplets skip करो।
