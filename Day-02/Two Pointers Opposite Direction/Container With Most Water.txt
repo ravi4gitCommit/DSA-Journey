@@ -1,0 +1,131 @@
+# LeetCode 11 — Container With Most Water
+
+Question: एक array `height` दिया है। ऐसी दो lines चुननी हैं जिनके बीच सबसे ज्यादा पानी store हो सके। Maximum water area return करना है।
+
+Example:
+
+```
+height = [1, 8, 6, 2, 5, 4, 8, 3, 7]
+Output = 49
+```
+
+Formula:
+
+\\[ \text{Area}=\min(h_L,h_R)\times(R-L) \\]
+
+## 1. Brute Force Approach
+
+Idea: हर possible pair of lines को check करेंगे और maximum area निकालेंगे।
+
+Example: Index `1` और `8` पर heights `8` और `7` हैं।
+
+Area = `min(8, 7) × (8 - 1) = 49`
+
+Time: O(n²) · Space: O(1)
+
+```
+
+class Main {
+    public static int maxArea(int[] height) {
+
+        int maxWater = 0;
+
+        // पहली line चुनेंगे
+        for (int i = 0; i < height.length; i++) {
+
+            // उसके बाद की हर line के साथ pair बनाएँगे
+            for (int j = i + 1; j < height.length; j++) {
+
+                // पानी की ऊँचाई छोटी line के बराबर होगी
+                int h = Math.min(height[i], height[j]);
+
+                // दोनों lines के बीच की दूरी निकालेंगे
+                int width = j - i;
+
+                // इस pair का area निकालेंगे
+                int area = h * width;
+
+                // अब तक का maximum area update करेंगे
+                maxWater = Math.max(maxWater, area);
+            }
+        }
+
+        return maxWater;
+    }
+}
+
+```
+
+## 2. Better Approach — Limited Pairs (Heuristic)
+
+Idea: कुछ pairs चुनकर area check करेंगे, लेकिन सभी pairs check नहीं करेंगे।
+
+उदाहरण के लिए, हर दूसरी line के साथ pair check कर सकते हैं। इससे कुछ cases में जल्दी answer मिल सकता है।
+
+लेकिन ध्यान दें: यह guaranteed correct approach नहीं है। कोई भी pair skip करने से maximum area छूट सकता है। इसलिए LeetCode के लिए इसे सही Better Approach नहीं मानना चाहिए।
+
+## 3. Optimal Approach — Two Pointers
+
+Idea: एक pointer शुरुआत में (`left`) और दूसरा अंत में (`right`) रखेंगे।
+
+- Area calculate करके maximum update करेंगे।
+- जिसकी height छोटी है, उसी pointer को अंदर लाएँगे।
+- दोनों heights बराबर हों, तो किसी एक को अंदर लाना सही है।
+
+Example: `height = [1,8,6,2,5,4,8,3,7]`
+
+- शुरुआत में area = `1 × 8 = 8`
+- Left height `1` छोटी है, इसलिए `left++`।
+- इसी तरह आगे बढ़ते हुए index `1` और `8` पर area `7 × 7 = 49` मिलता है।
+
+Time: O(n) · Space: O(1)
+
+```
+
+class Main {
+    public static int maxArea(int[] height) {
+
+        // एक pointer शुरुआत में और दूसरा अंत में
+        int left = 0;
+        int right = height.length - 1;
+
+        int maxWater = 0;
+
+        // जब तक दोनों pointers मिल नहीं जाते
+        while (left < right) {
+
+            // छोटी height ही पानी की ऊँचाई तय करेगी
+            int h = Math.min(height[left], height[right]);
+
+            // दोनों lines के बीच की दूरी
+            int width = right - left;
+
+            // वर्तमान pair का area
+            int area = h * width;
+
+            // Maximum area store करेंगे
+            maxWater = Math.max(maxWater, area);
+
+            // छोटी height वाले pointer को अंदर लाएँगे
+            if (height[left] < height[right]) {
+                left++;
+            } else {
+                right--;
+            }
+        }
+
+        return maxWater;
+    }
+}
+
+```
+
+## Final Revision
+
+| Approach     | Time                                                 | Space |
+| ------------ | ---------------------------------------------------- | ----- |
+| Brute Force  | O(n²)                                                | O(1)  |
+| Better       | कोई guaranteed सही intermediate approach आवश्यक नहीं | —     |
+| Two Pointers | O(n)                                                 | O(1)  |
+
+याद रखने की लाइन: Container With Most Water में area = छोटी height × width; maximum निकालो और छोटी height वाले pointer को move करो।
