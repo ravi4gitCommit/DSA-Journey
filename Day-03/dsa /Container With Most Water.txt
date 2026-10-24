@@ -1,0 +1,118 @@
+# LeetCode 11 — Container With Most Water
+
+Question: `height` array में ऐसी दो lines चुननी हैं जिनके बीच maximum पानी store हो सके। Maximum area return करना है।
+
+```
+Input:  height = [1,8,6,2,5,4,8,3,7]
+Output: 49
+```
+
+Formula:
+
+\\[ \text{Area}=\min(h_L,h_R)\times(R-L) \\]
+
+## 1. Brute Force — सभी Pairs Check करो
+
+Idea: हर possible pair की height और width से area निकालकर maximum रखेंगे।
+
+Example: Index `1` और `8` पर heights `8` और `7` हैं।
+
+Area = `min(8,7) × (8-1) = 49`
+
+Time: O(n²) · Extra Space: O(1)
+
+```
+
+class Solution {
+    public int maxArea(int[] height) {
+        int maxWater = 0;
+
+        // पहली line चुनेंगे
+        for (int i = 0; i < height.length; i++) {
+
+            // उसके बाद की सभी lines check करेंगे
+            for (int j = i + 1; j < height.length; j++) {
+
+                // छोटी height पानी की ऊँचाई तय करेगी
+                int h = Math.min(height[i], height[j]);
+
+                // दोनों lines के बीच की दूरी
+                int width = j - i;
+
+                // वर्तमान area निकालकर maximum update करेंगे
+                int area = h * width;
+                maxWater = Math.max(maxWater, area);
+            }
+        }
+
+        return maxWater;
+    }
+}
+
+```
+
+## 2. Better — Binary Search नहीं, बल्कि Pruned Search
+
+इस problem में कोई अलग standard intermediate approach, जो सामान्यतः brute force और optimal के बीच पढ़ाई जाती है, आवश्यक नहीं है। सही और popular progression है: Brute Force → Two Pointers। केवल कुछ pairs check करने वाला तरीका गलत answer दे सकता है।
+
+इसलिए तीसरी approach में हम optimal solution ही इस्तेमाल करेंगे—बिना कोई गलत “Better” algorithm बनाए।
+
+## 3. Optimal — Two Pointers
+
+Idea: एक pointer शुरुआत में और दूसरा अंत में रखेंगे।
+
+- Area निकालकर maximum update करेंगे।
+- छोटी height वाले pointer को अंदर बढ़ाएँगे।
+- बड़ी height को स्थिर रखने से बेहतर area मिलने की संभावना रहती है।
+
+Example: `[1,8,6,2,5,4,8,3,7]`
+
+- शुरुआत: `min(1,7) × 8 = 8`
+- छोटी height `1` है, इसलिए `left++`।
+- आगे चलते हुए heights `8` और `7` पर area `7 × 7 = 49` मिलता है।
+
+Time: O(n) · Extra Space: O(1)
+
+```
+
+class Solution {
+    public int maxArea(int[] height) {
+        int left = 0;
+        int right = height.length - 1;
+        int maxWater = 0;
+
+        // दोनों pointers के मिलने तक चलेंगे
+        while (left < right) {
+
+            // पानी की ऊँचाई छोटी line से तय होगी
+            int h = Math.min(height[left], height[right]);
+
+            // दोनों lines के बीच की दूरी
+            int width = right - left;
+
+            // Maximum area update करेंगे
+            maxWater = Math.max(maxWater, h * width);
+
+            // छोटी height वाले pointer को move करेंगे
+            if (height[left] < height[right]) {
+                left++;
+            } else {
+                right--;
+            }
+        }
+
+        return maxWater;
+    }
+}
+
+```
+
+## Final Revision
+
+| Approach     | Time                                           | Extra Space |
+| ------------ | ---------------------------------------------- | ----------- |
+| Brute Force  | O(n²)                                          | O(1)        |
+| Better       | कोई आवश्यक standard intermediate approach नहीं | —           |
+| Two Pointers | O(n)                                           | O(1)        |
+
+याद रखने की लाइन: Container With Most Water में `Area = छोटी height × width`; छोटी height वाले pointer को move करो।
