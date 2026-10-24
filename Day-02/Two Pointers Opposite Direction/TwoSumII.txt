@@ -1,1 +1,157 @@
 
+
+# LeetCode 167 — Two Sum II
+
+Question: Sorted array `numbers` में दो numbers खोजने हैं जिनका sum `target` के बराबर हो। उनके 1-based indices return करने हैं।
+
+Example:
+
+```
+numbers = [2, 7, 11, 15]
+target = 9
+
+Output = [1, 2]
+```
+
+क्योंकि \\(2+7=9\\), और इनके 1-based indices `1` और `2` हैं।
+
+## 1. Brute Force Approach
+
+Idea: हर number को उसके बाद आने वाले सभी numbers के साथ जोड़कर check करेंगे।
+
+Example: `2 + 7 = 9` मिल गया, इसलिए `[1, 2]` return कर देंगे।
+
+Time: O(n²) · Space: O(1)
+
+```
+
+class Main {
+    public static int[] twoSum(int[] numbers, int target) {
+
+        // पहले हर number को चुनेंगे
+        for (int i = 0; i < numbers.length; i++) {
+
+            // उसके बाद वाले numbers से जोड़कर देखेंगे
+            for (int j = i + 1; j < numbers.length; j++) {
+
+                // Target मिलते ही 1-based indices return करेंगे
+                if (numbers[i] + numbers[j] == target) {
+                    return new int[]{i + 1, j + 1};
+                }
+            }
+        }
+
+        // Question में solution मौजूद है
+        return new int[]{-1, -1};
+    }
+}
+
+```
+
+## 2. Better Approach — HashMap
+
+Idea: हर number के लिए उसका required number (`target - current number`) HashMap में खोजेंगे। मिल गया तो दोनों indices return कर देंगे।
+
+Example: `target = 9`, current number `2` है, तो required number `7` होगा। Map में `7` मिलते ही answer `[1, 2]` होगा।
+
+Average Time: O(n) · Space: O(n)
+
+```
+
+import java.util.HashMap;
+
+class Main {
+    public static int[] twoSum(int[] numbers, int target) {
+
+        // Number और उसका 0-based index store करेंगे
+        HashMap<Integer, Integer> map = new HashMap<>();
+
+        for (int i = 0; i < numbers.length; i++) {
+
+            // वह number निकालेंगे जिसकी जरूरत है
+            int required = target - numbers[i];
+
+            // Required number पहले से map में है?
+            if (map.containsKey(required)) {
+
+                // Answer में 1-based indices return करेंगे
+                return new int[]{
+                    map.get(required) + 1, i + 1
+                };
+            }
+
+            // Current number और उसका index store करेंगे
+            map.put(numbers[i], i);
+        }
+
+        return new int[]{-1, -1};
+    }
+}
+
+```
+
+ध्यान दें: यह approach काम करती है, लेकिन sorted array होने का फायदा नहीं उठाती।
+
+## 3. Optimal Approach — Two Pointers
+
+Idea: एक pointer शुरुआत (`left`) पर और दूसरा अंत (`right`) पर रखेंगे।
+
+- Sum = target → दोनों indices return।
+- Sum छोटा है → `left++` करेंगे।
+- Sum बड़ा है → `right--` करेंगे।
+
+Example: `[2, 7, 11, 15]`, target `9`
+
+1. `2 + 15 = 17` → बड़ा है, इसलिए `right--`।
+2. `2 + 11 = 13` → बड़ा है, फिर `right--`।
+3. `2 + 7 = 9` → मिल गया! Answer `[1, 2]`।
+
+Time: O(n) · Space: O(1)
+
+```
+
+class Main {
+    public static int[] twoSum(int[] numbers, int target) {
+
+        // Left शुरुआत और right आखिरी index पर रहेगा
+        int left = 0;
+        int right = numbers.length - 1;
+
+        // जब तक दोनों pointers मिल नहीं जाते
+        while (left < right) {
+
+            // दोनों numbers का sum निकालेंगे
+            int sum = numbers[left] + numbers[right];
+
+            if (sum == target) {
+
+                // 0-based को 1-based indices में बदलेंगे
+                return new int[]{left + 1, right + 1};
+
+            } else if (sum < target) {
+
+                // Sum छोटा है, बड़ा number चाहिए
+                left++;
+
+            } else {
+
+                // Sum बड़ा है, छोटा number चाहिए
+                right--;
+            }
+        }
+
+        return new int[]{-1, -1};
+    }
+}
+
+```
+
+## Final Revision
+
+| Approach     | Time         | Space |
+| ------------ | ------------ | ----- |
+| Brute Force  | O(n²)        | O(1)  |
+| HashMap      | O(n) average | O(n)  |
+| Two Pointers | O(n)         | O(1)  |
+
+याद रखने की लाइन: Sorted array में Two Sum II के लिए Two Pointers optimal है, क्योंकि यह एक ही traversal में answer खोजता है और extra space नहीं लेता।
