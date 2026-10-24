@@ -1,0 +1,195 @@
+# LeetCode 18 — 4Sum
+
+Question: Integer array `nums` और `target` दिया है। ऐसे चार numbers के सभी unique combinations खोजने हैं जिनका sum `target` के बराबर हो।
+
+Example:
+
+```
+nums = [1, 0, -1, 0, -2, 2]
+target = 0
+
+Output = [
+  [-2, -1, 1, 2],
+  [-2,  0, 0, 2],
+  [-1,  0, 0, 1]
+]
+```
+
+ध्यान दें: Duplicate quadruplets नहीं होने चाहिए।
+
+## 1. Brute Force — Four Nested Loops
+
+Idea: चार loops लगाकर हर possible combination का sum check करेंगे। सही combination को sort करके `Set` में रखेंगे, ताकि duplicates हट जाएँ।
+
+उदाहरण: `-2 + (-1) + 1 + 2 = 0` → valid quadruplet।
+
+Time: O(n⁴) · Extra Space: O(k) for unique results
+
+```
+
+import java.util.*;
+
+class Solution {
+    public List<List<Integer>> fourSum(int[] nums, int target) {
+        Set<List<Integer>> result = new HashSet<>();
+        int n = nums.length;
+
+        // पहला number चुनेंगे
+        for (int i = 0; i < n - 3; i++) {
+
+            // दूसरा number चुनेंगे
+            for (int j = i + 1; j < n - 2; j++) {
+                Set<Integer> seen = new HashSet<>();
+
+                // चौथे number की जरूरत निकालने के लिए तीसरा चुनेंगे
+                for (int k = j + 1; k < n; k++) {
+                    long required = (long) target
+                            - nums[i] - nums[j] - nums[k];
+
+                    // Required number पहले देखा है?
+                    if (required >= Integer.MIN_VALUE
+                            && required <= Integer.MAX_VALUE
+                            && seen.contains((int) required)) {
+
+                        // चारों numbers को sort करके unique बनाएँगे
+                        List<Integer> quad = Arrays.asList(
+                            nums[i], nums[j], nums[k], (int) required
+                        );
+                        Collections.sort(quad);
+                        result.add(quad);
+                    }
+
+                    // Current number को आगे के pairs के लिए store करेंगे
+                    seen.add(nums[k]);
+                }
+            }
+        }
+
+        return new ArrayList<>(result);
+    }
+}
+
+```
+
+## 2. Better — Three Loops + HashSet
+
+Idea: पहले दो numbers fix करेंगे। तीसरे number के लिए तीसरा loop चलाएँगे और HashSet में देखेंगे कि चौथा required number पहले मिल चुका है या नहीं।
+
+Example: `target = 0`, चुने हुए numbers `-2, -1, 1` हैं।
+
+Required fourth number:
+
+`0 - (-2) - (-1) - 1 = 2`
+
+अगर `2` HashSet में मौजूद है, तो `[-2, -1, 1, 2]` valid quadruplet है।
+
+Average Time: O(n³) · Extra Space: O(n), result के अलावा।
+
+ऊपर दिया गया code इसी Better approach का पूरा implementation है।
+
+## 3. Optimal — Sorting + Two Pointers
+
+Idea: Array को sort करेंगे। पहले दो numbers fix करेंगे, फिर `left` और `right` pointers से बाकी दो numbers खोजेंगे।
+
+- Sum `target` के बराबर → quadruplet save करो।
+- Sum छोटा → `left++`।
+- Sum बड़ा → `right--`।
+- Duplicate numbers को skip करेंगे, ताकि duplicate quadruplets न आएँ।
+
+Example: Sorted array `[-2, -1, 0, 0, 1, 2]`, target `0`
+
+`-2 + (-1) + 1 + 2 = 0` → `[-2, -1, 1, 2]`
+
+Time: O(n³) · Auxiliary Space: O(1), sorting के अतिरिक्त; result space अलग है।
+
+```
+
+import java.util.*;
+
+class Solution {
+    public List<List<Integer>> fourSum(int[] nums, int target) {
+        List<List<Integer>> result = new ArrayList<>();
+        int n = nums.length;
+
+        // Sorting से two pointers चलाना आसान होगा
+        Arrays.sort(nums);
+
+        // पहला number fix करेंगे
+        for (int i = 0; i < n - 3; i++) {
+
+            // पहले number के duplicates skip करेंगे
+            if (i > 0 && nums[i] == nums[i - 1]) {
+                continue;
+            }
+
+            // दूसरा number fix करेंगे
+            for (int j = i + 1; j < n - 2; j++) {
+
+                // दूसरे number के duplicates skip करेंगे
+                if (j > i + 1 && nums[j] == nums[j - 1]) {
+                    continue;
+                }
+
+                int left = j + 1;
+                int right = n - 1;
+
+                // बाकी दो numbers खोजेंगे
+                while (left < right) {
+
+                    // Long इस्तेमाल करेंगे ताकि integer overflow न हो
+                    long sum = (long) nums[i] + nums[j]
+                             + nums[left] + nums[right];
+
+                    if (sum == target) {
+
+                        // सही quadruplet मिल गया
+                        result.add(Arrays.asList(
+                            nums[i], nums[j], nums[left], nums[right]
+                        ));
+
+                        left++;
+                        right--;
+
+                        // Left के duplicate numbers skip करेंगे
+                        while (left < right &&
+                               nums[left] == nums[left - 1]) {
+                            left++;
+                        }
+
+                        // Right के duplicate numbers skip करेंगे
+                        while (left < right &&
+                               nums[right] == nums[right + 1]) {
+                            right--;
+                        }
+
+                    } else if (sum < target) {
+
+                        // Sum छोटा है, बड़ा number चाहिए
+                        left++;
+
+                    } else {
+
+                        // Sum बड़ा है, छोटा number चाहिए
+                        right--;
+                    }
+                }
+            }
+        }
+
+        return result;
+    }
+}
+
+```
+
+## Final Revision
+
+| Approach                         | Time Complexity | Extra Space\*    |
+| -------------------------------- | --------------- | ---------------- |
+| Brute Force — 4 loops            | O(n⁴)           | O(k) for results |
+| Better — 3 loops + HashSet       | O(n³) average   | O(n)             |
+| Optimal — Sorting + Two Pointers | O(n³)           | O(1) auxiliary   |
+
+\*Result में store किए गए quadruplets की memory अलग है।
+
+याद रखने की लाइन: 4Sum में दो numbers fix करो, बाकी दो को Two Pointers से खोजो और duplicates skip करो।
