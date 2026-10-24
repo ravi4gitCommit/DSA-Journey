@@ -1,0 +1,115 @@
+# LeetCode 344 — Reverse String
+
+Question: एक character array `char[] s` दिया है। इसे reverse करना है और in-place reverse करना है, यानी नया array नहीं बनाना है।
+
+Example:
+
+```
+Input:  ['h', 'e', 'l', 'l', 'o']
+Output: ['o', 'l', 'l', 'e', 'h']
+```
+
+## 1. Brute Force — Extra Array
+
+Idea: Characters को उल्टे क्रम में एक नए array में रखेंगे। फिर वापस original array में copy करेंगे।
+
+Time: O(n) · Extra Space: O(n)
+
+```
+
+class Solution {
+    public void reverseString(char[] s) {
+        int n = s.length;
+        char[] temp = new char[n];
+
+        // Original array को उल्टे क्रम में copy करेंगे
+        for (int i = 0; i < n; i++) {
+            temp[i] = s[n - 1 - i];
+        }
+
+        // Reversed characters वापस original array में रखेंगे
+        for (int i = 0; i < n; i++) {
+            s[i] = temp[i];
+        }
+    }
+}
+
+```
+
+## 2. Better — Two Pointers से Swap
+
+Idea: एक pointer शुरुआत में और दूसरा अंत में रखेंगे। दोनों characters को swap करेंगे और pointers को अंदर बढ़ाएँगे।
+
+Example: `['h','e','l','l','o']`
+
+- `h` और `o` swap → `['o','e','l','l','h']`
+- `e` और `l` swap → `['o','l','l','e','h']`
+
+Time: O(n) · Extra Space: O(1)
+
+```
+
+class Solution {
+    public void reverseString(char[] s) {
+        int left = 0;
+        int right = s.length - 1;
+
+        // दोनों pointers के मिलने तक swap करेंगे
+        while (left < right) {
+
+            // Left और right characters की अदला-बदली
+            char temp = s[left];
+            s[left] = s[right];
+            s[right] = temp;
+
+            // दोनों pointers अंदर बढ़ाएँगे
+            left++;
+            right--;
+        }
+    }
+}
+
+```
+
+## 3. Optimal — Recursive Approach
+
+Idea: पहले और आखिरी characters को swap करेंगे, फिर बीच के हिस्से को recursively reverse करेंगे।
+
+Time: O(n) · Extra Space: O(n), recursion stack के कारण
+
+```
+
+class Solution {
+    public void reverseString(char[] s) {
+        reverse(s, 0, s.length - 1);
+    }
+
+    // दिए गए हिस्से को recursively reverse करेंगे
+    private void reverse(char[] s, int left, int right) {
+
+        // Pointers मिल गए तो काम पूरा
+        if (left >= right) {
+            return;
+        }
+
+        // पहले और आखिरी character को swap करेंगे
+        char temp = s[left];
+        s[left] = s[right];
+        s[right] = temp;
+
+        // अब बीच के हिस्से को reverse करेंगे
+        reverse(s, left + 1, right - 1);
+    }
+}
+
+```
+
+## Final Revision
+
+| Approach                  | Time | Extra Space |
+| ------------------------- | ---- | ----------- |
+| Brute Force — Extra Array | O(n) | O(n)        |
+| Two Pointers — Swap       | O(n) | O(1)        |
+| Recursion                 | O(n) | O(n)        |
+
+ध्यान दो: LeetCode 344 में array को in-place reverse करना होता है। इसलिए Two Pointers वाला approach सबसे अच्छा और recommended solution है। Recursion एक alternative technique है, लेकिन space के मामले में optimal नहीं है।
