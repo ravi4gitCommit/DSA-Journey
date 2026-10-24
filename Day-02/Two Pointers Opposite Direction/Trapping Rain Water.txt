@@ -1,0 +1,190 @@
+# LeetCode 42 — Trapping Rain Water
+
+Question: एक array `height` दिया है, जिसमें हर bar की height बताई गई है। बारिश के बाद bars के बीच कितना पानी जमा होगा, उसका total निकालना है।
+
+Example:
+
+```
+height = [4, 2, 0, 3, 2, 5]
+Output = 9
+```
+
+मुख्य Formula:
+
+\\[ \text{Water at index }i = \min(\text{LeftMax},\text{RightMax})-\text{height}[i] \\]
+
+पानी तभी जमा होगा जब दोनों तरफ की boundary उस bar से ऊँची हो।
+
+## 1. Brute Force — हर Index पर Maximum खोजो
+
+Idea: हर bar के लिए उसके left side की maximum height और right side की maximum height निकालेंगे। फिर formula से पानी calculate करेंगे।
+
+Example: `height[2] = 0`
+
+- Left maximum = `4`
+- Right maximum = `5`
+- Water = `min(4, 5) - 0 = 4`
+
+हर index का पानी जोड़ने पर total `9` मिलेगा।
+
+Time: O(n²) · Extra Space: O(1)
+
+```
+
+class Solution {
+    public int trap(int[] height) {
+        int n = height.length;
+        int totalWater = 0;
+
+        // हर bar पर जमा होने वाला पानी निकालेंगे
+        for (int i = 0; i < n; i++) {
+            int leftMax = 0;
+            int rightMax = 0;
+
+            // Current bar के left की maximum height
+            for (int j = 0; j <= i; j++) {
+                leftMax = Math.max(leftMax, height[j]);
+            }
+
+            // Current bar के right की maximum height
+            for (int j = i; j < n; j++) {
+                rightMax = Math.max(rightMax, height[j]);
+            }
+
+            // छोटी boundary के आधार पर पानी निकालेंगे
+            int water = Math.min(leftMax, rightMax) - height[i];
+
+            // Total पानी में जोड़ेंगे
+            totalWater += water;
+        }
+
+        return totalWater;
+    }
+}
+
+```
+
+## 2. Better — Prefix Maximum + Suffix Maximum
+
+Idea: हर index पर बार-बार maximum खोजने के बजाय, दो arrays में पहले से maximum store करेंगे।
+
+- `leftMax[i]` = index `i` तक की maximum height।
+- `rightMax[i]` = index `i` से अंत तक की maximum height।
+
+Example: `height = [4, 2, 0, 3, 2, 5]`
+
+Index `2` पर `leftMax = 4`, `rightMax = 5`।
+
+Water = `min(4, 5) - 0 = 4`।
+
+Time: O(n) · Extra Space: O(n)
+
+```
+
+class Solution {
+    public int trap(int[] height) {
+        int n = height.length;
+
+        // दोनों तरफ की maximum heights store करेंगे
+        int[] leftMax = new int[n];
+        int[] rightMax = new int[n];
+
+        // Left से right maximum बनाएँगे
+        leftMax[0] = height[0];
+
+        for (int i = 1; i < n; i++) {
+            leftMax[i] = Math.max(leftMax[i - 1], height[i]);
+        }
+
+        // Right से left maximum बनाएँगे
+        rightMax[n - 1] = height[n - 1];
+
+        for (int i = n - 2; i >= 0; i--) {
+            rightMax[i] = Math.max(rightMax[i + 1], height[i]);
+        }
+
+        int totalWater = 0;
+
+        // हर index पर जमा पानी जोड़ेंगे
+        for (int i = 0; i < n; i++) {
+            int water = Math.min(leftMax[i], rightMax[i]) - height[i];
+            totalWater += water;
+        }
+
+        return totalWater;
+    }
+}
+
+```
+
+## 3. Optimal — Two Pointers
+
+Idea: `left` और `right` pointers से दोनों तरफ चलेंगे। साथ में `leftMax` और `rightMax` maintain करेंगे। अब अलग arrays बनाने की जरूरत नहीं है।
+
+- अगर `height[left] <= height[right]`, तो left side process करेंगे।
+- वरना right side process करेंगे।
+- हर बार पानी calculate करके total में जोड़ेंगे।
+
+Example: `[4, 2, 0, 3, 2, 5]`
+
+- `4` और `5` boundaries हैं।
+- इनके बीच की bars पर पानी जमा होता है।
+- सभी bars का पानी जोड़ने पर `9` मिलता है।
+
+Time: O(n) · Extra Space: O(1)
+
+```
+
+class Solution {
+    public int trap(int[] height) {
+        int left = 0;
+        int right = height.length - 1;
+
+        // दोनों तरफ की maximum heights track करेंगे
+        int leftMax = 0;
+        int rightMax = 0;
+
+        int totalWater = 0;
+
+        // दोनों pointers के मिलने तक चलेंगे
+        while (left < right) {
+
+            if (height[left] <= height[right]) {
+
+                // Left तरफ की maximum height update करेंगे
+                leftMax = Math.max(leftMax, height[left]);
+
+                // Left तरफ जमा होने वाला पानी जोड़ेंगे
+                totalWater += leftMax - height[left];
+
+                // अगली bar पर जाएँगे
+                left++;
+
+            } else {
+
+                // Right तरफ की maximum height update करेंगे
+                rightMax = Math.max(rightMax, height[right]);
+
+                // Right तरफ जमा होने वाला पानी जोड़ेंगे
+                totalWater += rightMax - height[right];
+
+                // अगली bar पर जाएँगे
+                right--;
+            }
+        }
+
+        return totalWater;
+    }
+}
+
+```
+
+## Final Revision
+
+| Approach               | Time  | Extra Space |
+| ---------------------- | ----- | ----------- |
+| Brute Force            | O(n²) | O(1)        |
+| Prefix + Suffix Arrays | O(n)  | O(n)        |
+| Two Pointers           | O(n)  | O(1)        |
+
+याद रखने की लाइन: Trapping Rain Water में पानी = छोटी boundary − current height। Optimal solution में `leftMax`, `rightMax` और Two Pointers का इस्तेमाल करो।
