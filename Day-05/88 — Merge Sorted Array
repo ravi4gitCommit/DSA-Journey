@@ -1,0 +1,186 @@
+# LeetCode 643 — Maximum Average Subarray I
+
+Pattern: Fixed-Size Sliding Window
+
+Problem: Integer array `nums` aur integer `k` diya hai. Size exactly `k` wale contiguous subarray ka maximum average find karna hai.
+
+Example:
+
+```
+Input:  nums = [1, 12, -5, -6, 50, 3], k = 4
+Output: 12.75
+```
+
+Kyunki maximum-sum subarray hai `[12, -5, -6, 50]`.
+
+\\[ \text{Average}=\frac{12+(-5)+(-6)+50}{4} =\frac{51}{4}=12.75 \\]
+
+## Approach 1: Brute Force
+
+Har possible size-`k` subarray ka sum calculate karo, phir maximum average find karo.
+
+```
+class Solution {
+    public double findMaxAverage(int[] nums, int k) {
+        double maxAverage = Double.NEGATIVE_INFINITY;
+
+        // Har possible starting index check karo
+        for (int i = 0; i <= nums.length - k; i++) {
+            int sum = 0;
+
+            // Size k ke subarray ka sum nikalo
+            for (int j = i; j < i + k; j++) {
+                sum += nums[j];
+            }
+
+            double average = (double) sum / k;
+            maxAverage = Math.max(maxAverage, average);
+        }
+
+        return maxAverage;
+    }
+}
+```
+
+- Time: \\(O(nk)\\)
+- Extra Space: \\(O(1)\\)
+
+## Approach 2: Better — Prefix Sum
+
+Idea: Prefix sum array banao, jisse kisi bhi subarray ka sum \\(O(1)\\) time mein nikal sakein.
+
+```
+class Solution {
+    public double findMaxAverage(int[] nums, int k) {
+        int n = nums.length;
+        int[] prefix = new int[n + 1];
+
+        // Prefix sum calculate karo
+        for (int i = 0; i < n; i++) {
+            prefix[i + 1] = prefix[i] + nums[i];
+        }
+
+        int maxSum = Integer.MIN_VALUE;
+
+        // Har size-k window ka sum nikalo
+        for (int i = 0; i <= n - k; i++) {
+            int sum = prefix[i + k] - prefix[i];
+            maxSum = Math.max(maxSum, sum);
+        }
+
+        return (double) maxSum / k;
+    }
+}
+```
+
+- Time: \\(O(n)\\)
+- Extra Space: \\(O(n)\\)
+
+## Approach 3: Optimal — Fixed-Size Sliding Window
+
+Recommended
+
+Idea: Pehle `k` elements ka sum nikalo. Phir window ko ek position right slide karo:
+
+- Purana leftmost element subtract karo.
+- Naya rightmost element add karo.
+- Maximum window sum update karo.
+
+Is tarah har window ke liye poora sum dobara calculate nahi karna padta.
+
+```
+class Solution {
+    public double findMaxAverage(int[] nums, int k) {
+        int sum = 0;
+
+        // First window ka sum
+        for (int i = 0; i < k; i++) {
+            sum += nums[i];
+        }
+
+        int maxSum = sum;
+
+        // Window ko ek-ek position right slide karo
+        for (int i = k; i < nums.length; i++) {
+            sum = sum - nums[i - k] + nums[i];
+
+            // Maximum sum update karo
+            maxSum = Math.max(maxSum, sum);
+        }
+
+        // Average calculate karo
+        return (double) maxSum / k;
+    }
+}
+```
+
+### Dry Run
+
+Input: `nums = [1, 12, -5, -6, 50, 3]`, `k = 4`
+
+| Window             | Sum | Maximum Sum |
+| ------------------ | --- | ----------- |
+| `[1, 12, -5, -6]`  | 2   | 2           |
+| `[12, -5, -6, 50]` | 51  | 51          |
+| `[-5, -6, 50, 3]`  | 42  | 51          |
+
+Final answer: \\(51/4 = 12.75\\)
+
+Sliding window movement
+
+1
+
+12
+
+-5
+
+-6
+
+50
+
+3
+
+Window 1 — sum = 2
+
+1
+
+12
+
+-5
+
+-6
+
+50
+
+3
+
+Window 2 — sum = 51 (maximum)
+
+1
+
+12
+
+-5
+
+-6
+
+50
+
+3
+
+Window 3 — sum = 42
+
+- Time: \\(O(n)\\)
+- Extra Space: \\(O(1)\\)
+
+## Final Comparison
+
+| Approach       | Time        | Extra Space |
+| -------------- | ----------- | ----------- |
+| Brute Force    | \\(O(nk)\\) | \\(O(1)\\)  |
+| Prefix Sum     | \\(O(n)\\)  | \\(O(n)\\)  |
+| Sliding Window | \\(O(n)\\)  | \\(O(1)\\)  |
+
+Yaad rakhne ki line: Fixed-size window mein `new sum = old sum - outgoing element + incoming element`.
+
+Pattern: Jab question mein maximum/minimum sum or average of a subarray of size exactly `k` aaye, toh Fixed-Size Sliding Window try karo.
