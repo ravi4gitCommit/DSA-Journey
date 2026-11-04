@@ -1,0 +1,200 @@
+# LeetCode 410 — Split Array Largest Sum
+
+
+
+Hard
+
+Pattern: Binary Search on Answer + Greedy
+
+
+
+## 1. Problem क्या है?
+
+एक array `nums` और एक integer `k` दिया है।
+
+Array को exactly `k` non-empty continuous subarrays में split करना है।
+
+हमें ऐसा split करना है जिसमें सभी subarrays के sums में से maximum sum minimum हो।
+
+Example:
+
+```
+nums = [7, 2, 5, 10, 8]
+k = 2
+
+Output = 18
+```
+
+Optimal split:
+
+```
+[7, 2, 5]  → Sum = 14
+[10, 8]    → Sum = 18
+
+Largest Sum = 18
+```
+
+इसलिए answer `18` है।
+
+## 2. Brute Force — Try All Possible Splits
+
+सभी possible ways से array को `k` continuous subarrays में split करेंगे और हर split का maximum sum निकालेंगे। उनमें minimum maximum sum answer होगा।
+
+- हर possible split try करना होगा।
+- फिर हर subarray का sum calculate करना होगा।
+
+इसकी implementation recursion + backtracking से की जा सकती है।
+
+- Time: Exponential (लगभग \\(O(2^{n-1})\\) split possibilities)
+- Space: O(n) recursion stack.
+
+इसलिए यह approach बड़े input के लिए practical नहीं है।
+
+## 3. Better / Optimal — Binary Search on Answer
+
+Main Idea: हमें minimum possible largest subarray sum find करना है।
+
+### Step 1: Search Range
+
+```
+low = Maximum element
+high = Sum of all elements
+```
+
+क्यों?
+
+- `low`: किसी भी subarray का sum maximum element से छोटा नहीं हो सकता।
+- `high`: पूरा array एक ही subarray में रखने पर total sum मिलेगा।
+
+### Step 2: Greedy Feasibility Check
+
+मान लो हमें एक maximum allowed sum `mid` दिया गया है।
+
+Check करेंगे कि इस capacity में array को maximum कितने नहीं, बल्कि minimum कितने subarrays में बाँटना पड़ेगा।
+
+Logic:
+
+1. Left से elements लेना शुरू करो।
+2. जब अगला element जोड़ने पर sum `mid` से ज्यादा हो जाए, नया subarray शुरू करो।
+3. Required subarrays count करो।
+
+- अगर required subarrays `<= k` हैं → `mid` valid है। Smaller answer try करो।
+- अगर required subarrays `> k` हैं → `mid` छोटा है। Range बढ़ाओ।
+
+### Java Code (LeetCode)
+
+```
+class Solution {
+    public int splitArray(int[] nums, int k) {
+
+        int low = 0;
+        int high = 0;
+
+        // Search range find karo
+        for (int num : nums) {
+            low = Math.max(low, num);
+            high += num;
+        }
+
+        int answer = high;
+
+        while (low <= high) {
+
+            int mid = low + (high - low) / 2;
+
+            int subarrays = 1;
+            int currentSum = 0;
+
+            // Greedy splitting
+            for (int num : nums) {
+
+                if (currentSum + num > mid) {
+                    subarrays++;
+                    currentSum = 0;
+                }
+
+                currentSum += num;
+            }
+
+            if (subarrays <= k) {
+
+                // Valid answer, smaller maximum sum try karo
+                answer = mid;
+                high = mid - 1;
+            }
+
+            else {
+
+                // Maximum sum badhana padega
+                low = mid + 1;
+            }
+        }
+
+        return answer;
+    }
+}
+```
+
+- Time: O(n × log(sum(nums)))
+- Space: O(1)
+
+## 4. Dry Run
+
+```
+nums = [7, 2, 5, 10, 8]
+k = 2
+
+low = 10
+high = 32
+```
+
+| Step | low | high | mid | Subarrays Required |
+| ---- | --- | ---- | --- | ------------------ |
+| 1    | 10  | 32   | 21  | 2                  |
+| 2    | 10  | 20   | 15  | 3                  |
+| 3    | 16  | 20   | 18  | 2                  |
+| 4    | 16  | 17   | 16  | 3                  |
+| 5    | 17  | 17   | 17  | 3                  |
+
+अब `low = 18`, `high = 17`, इसलिए loop stop।
+
+Output: 18
+
+## 5. Complexity Comparison
+
+| Approach               | Time            | Space |
+| ---------------------- | --------------- | ----- |
+| Brute Force            | Exponential     | O(n)  |
+| Binary Search + Greedy | O(n × log(sum)) | O(1)  |
+
+## 6. याद रखने की लाइन
+
+Split Array Largest Sum = Minimum Largest Subarray Sum.
+
+```
+if (subarrays <= k) {
+    answer = mid;
+    high = mid - 1;
+} else {
+    low = mid + 1;
+}
+```
+
+Search Range:
+
+```
+low = maximum element;
+high = total sum;
+```
+
+Important: Greedy check में minimum required subarrays निकालते हैं। अगर वे `k` से कम या बराबर हैं, तो array को exactly `k` non-empty subarrays में भी split किया जा सकता है (यहाँ `k <= nums.length` है)।
+
+## Binary Search on Answer — Revision
+
+| LC   | Problem                   | What to Minimize     |
+| ---- | ------------------------- | -------------------- |
+| 875  | Koko Eating Bananas       | Eating Speed         |
+| 1011 | Capacity To Ship Packages | Ship Capacity        |
+| 410  | Split Array Largest Sum   | Largest Subarray Sum |
+
+तीनों का common pattern: Search Range → Binary Search → Greedy Feasibility Check → Minimum Valid Answer.
